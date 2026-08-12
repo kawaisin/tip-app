@@ -8,7 +8,8 @@ network, no accounts — all the math happens in the browser.
 - **Split between** — slider, 1–10 people
 - **Results** — bill, tip, total, plus tip each and total each
 
-Bill, tip, split and currency are remembered between visits (`localStorage`).
+Amounts are shown in US dollars. Bill, tip and split are remembered between
+visits (`localStorage`).
 When per-person amounts can't divide evenly to the cent, a line under the
 results says how far off the split lands, rather than quietly hiding the
 difference.
@@ -54,8 +55,8 @@ the better route for daily use.
 ## Notes
 
 - Light and dark themes follow the phone's system setting.
-- Currency is a display symbol only; there is no conversion.
+- Amounts are formatted as USD (`$1,234.56`); there is no currency selection.
 - To change the tip range, edit the `min`/`max` on the `#tip` range input in
   `index.html`; same for `#split`.
-- After editing, bump `CACHE` in `sw.js` (e.g. `tip-app-v3`) so installed
+- After editing, bump `CACHE` in `sw.js` (e.g. `tip-app-v5`) so installed
   copies drop their old cached assets.

@@ -62,16 +62,6 @@
   }
   h1 { font-size: 20px; font-weight: 650; margin: 0; letter-spacing: -.01em; }
 
-  select#currency {
-    font: inherit;
-    font-size: 14px;
-    color: var(--muted);
-    background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 4px 8px;
-  }
-
   .card {
     background: var(--card);
     border: 1px solid var(--line);
@@ -248,20 +238,13 @@
 <main>
   <header>
     <h1>Tip Calculator</h1>
-    <select id="currency" aria-label="Currency">
-      <option value="USD">$ USD</option>
-      <option value="EUR">€ EUR</option>
-      <option value="GBP">£ GBP</option>
-      <option value="HKD">HK$ HKD</option>
-      <option value="BRL">R$ BRL</option>
-    </select>
   </header>
 
   <section class="card">
     <label class="field">
       <span class="label">Bill total</span>
       <span class="money-input">
-        <span class="sym" data-sym>$</span>
+        <span class="sym">$</span>
         <input id="bill" type="text" inputmode="decimal" enterkeyhint="done"
                placeholder="0.00" autocomplete="off" aria-label="Bill total">
       </span>
@@ -324,20 +307,7 @@
   var $ = function (id) { return document.getElementById(id); };
 
   var billEl = $('bill'), tipEl = $('tip'), splitEl = $('split');
-  var symEls = document.querySelectorAll('[data-sym]');
-  var currencyEl = $('currency');
   var STORE = 'tip-app-v1';
-
-  // Symbol plus the thousands/decimal separators each currency is normally
-  // written with, so R$ 1.234,56 doesn't come out looking American.
-  var CURRENCIES = {
-    USD: { sym: '$',   group: ',', dec: '.' },
-    EUR: { sym: '€',   group: '.', dec: ',' },
-    GBP: { sym: '£',   group: ',', dec: '.' },
-    HKD: { sym: 'HK$', group: ',', dec: '.' },
-    BRL: { sym: 'R$',  group: '.', dec: ',', pad: ' ' }   // written "R$ 1.234,56"
-  };
-  var cur = CURRENCIES.USD;
 
   function num(value) {
     var n = parseFloat(String(value).replace(/[^0-9.]/g, ''));
@@ -357,10 +327,11 @@
     el.style.setProperty('--fill', pct + '%');
   }
 
+  // USD only — "$1,234.56".
   function money(n) {
     var parts = n.toFixed(2).split('.');
-    var whole = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, cur.group);
-    return cur.sym + (cur.pad || '') + whole + cur.dec + parts[1];
+    var whole = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return '$' + whole + '.' + parts[1];
   }
 
   function render() {
@@ -401,7 +372,7 @@
   function save() {
     try {
       localStorage.setItem(STORE, JSON.stringify({
-        bill: billEl.value, tip: tipEl.value, split: splitEl.value, cur: currencyEl.value
+        bill: billEl.value, tip: tipEl.value, split: splitEl.value
       }));
     } catch (e) { /* private mode / storage disabled — calculator still works */ }
   }
@@ -415,15 +386,7 @@
       billEl.value = s.bill || '';
       if (s.tip) tipEl.value = s.tip;
       if (s.split) splitEl.value = s.split;
-      if (s.cur && CURRENCIES[s.cur]) currencyEl.value = s.cur;
     } catch (e) { /* ignore malformed state */ }
-  }
-
-  function setCurrency() {
-    // Falls back to USD if an older saved value no longer matches the list.
-    cur = CURRENCIES[currencyEl.value] || CURRENCIES.USD;
-    symEls.forEach(function (el) { el.textContent = cur.sym; });
-    render();
   }
 
   $('reset').addEventListener('click', function () {
@@ -436,7 +399,6 @@
 
   [billEl, tipEl, splitEl].forEach(function (el) { el.addEventListener('input', render); });
   billEl.addEventListener('focus', function () { billEl.select(); });
-  currencyEl.addEventListener('change', setCurrency);
 
   // Dismiss the keyboard when Return is pressed on any field.
   document.addEventListener('keydown', function (e) {
@@ -446,7 +408,7 @@
   });
 
   load();
-  setCurrency();
+  render();
 
   // Offline caching only applies when served over http(s); harmless otherwise.
   if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
