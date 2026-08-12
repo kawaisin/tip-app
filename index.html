@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tip">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Tip Calculator</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --card-2: #eef0f4;
+    --text: #12141a;
+    --muted: #5f6673;
+    --line: #dfe2e8;
+    --accent: #1f8a70;
+    --accent-text: #ffffff;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --card-2: #1f232c;
+      --text: #eef1f6;
+      --muted: #98a1b0;
+      --line: #2a2f3a;
+      --accent: #2fbf9b;
+      --accent-text: #06231c;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  body {
+    padding: max(16px, env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: center;
+  }
+
+  main { width: 100%; max-width: 460px; }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 4px 2px 16px;
+  }
+  h1 { font-size: 20px; font-weight: 650; margin: 0; letter-spacing: -.01em; }
+
+  select#currency {
+    font: inherit;
+    font-size: 14px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .field, label.field { display: block; margin-bottom: 22px; }
+  label.field:last-child { margin-bottom: 0; }
+
+  .label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .money-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-2);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 0 14px;
+  }
+  .money-input:focus-within { border-color: var(--accent); }
+  .money-input .sym { color: var(--muted); font-size: 22px; font-weight: 600; }
+
+  input[type="text"] {
+    font: inherit;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    width: 100%;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: var(--text);
+    padding: 12px 0;
+    text-align: right;
+  }
+  input::placeholder { color: var(--muted); opacity: .5; }
+
+  .slider-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .slider-head .label { margin: 0; }
+  #tipValue {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    margin: 10px 0 4px;
+    background: transparent;
+    display: block;
+  }
+  input[type="range"]:focus { outline: none; }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    /* --fill is set from JS so the track fills up to the thumb */
+    background:
+      linear-gradient(var(--accent), var(--accent)) 0 / var(--fill, 40%) 100% no-repeat,
+      var(--card-2);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    margin-top: -11px;             /* centre the thumb on the 8px track */
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--card);
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--card-2);
+  }
+  input[type="range"]::-moz-range-progress {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--card);
+    cursor: pointer;
+  }
+  input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  #splitValue {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .results { background: var(--card); }
+  .row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+  }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row .k { color: var(--muted); font-size: 15px; }
+  .row .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .row.total .k { color: var(--text); font-weight: 600; }
+  .row.total .v { font-size: 24px; }
+  .row.each { color: var(--accent); }
+  .row.each .k { color: var(--accent); font-weight: 600; }
+  .row.each .v { color: var(--accent); }
+
+  .divider-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    padding: 14px 0 2px;
+    border-top: 1px solid var(--line);
+    margin-top: 4px;
+  }
+
+  .note { font-size: 12px; color: var(--muted); margin: 10px 2px 0; min-height: 1em; }
+
+  .reset {
+    font: inherit;
+    font-weight: 600;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Tip Calculator</h1>
+    <select id="currency" aria-label="Currency">
+      <option value="$">$ USD</option>
+      <option value="€">€ EUR</option>
+      <option value="£">£ GBP</option>
+      <option value="¥">¥ JPY</option>
+      <option value="C$">C$ CAD</option>
+      <option value="A$">A$ AUD</option>
+      <option value="₹">₹ INR</option>
+    </select>
+  </header>
+
+  <section class="card">
+    <label class="field">
+      <span class="label">Bill total</span>
+      <span class="money-input">
+        <span class="sym" data-sym>$</span>
+        <input id="bill" type="text" inputmode="decimal" enterkeyhint="done"
+               placeholder="0.00" autocomplete="off" aria-label="Bill total">
+      </span>
+    </label>
+
+    <div class="field">
+      <div class="slider-head">
+        <span class="label" id="tipLabel">Tip percentage</span>
+        <span id="tipValue">15%</span>
+      </div>
+      <input id="tip" type="range" min="5" max="30" step="1" value="15"
+             aria-labelledby="tipLabel">
+      <div class="scale"><span>5%</span><span>30%</span></div>
+    </div>
+
+    <div class="field" style="margin-bottom:0">
+      <div class="slider-head">
+        <span class="label" id="splitLabel">Split between</span>
+        <span id="splitValue">1 person</span>
+      </div>
+      <input id="split" type="range" min="1" max="10" step="1" value="1"
+             aria-labelledby="splitLabel">
+      <div class="scale"><span>1</span><span>10</span></div>
+    </div>
+  </section>
+
+  <section class="card results" aria-live="polite">
+    <div class="row">
+      <span class="k">Bill</span>
+      <span class="v" id="outBill">$0.00</span>
+    </div>
+    <div class="row">
+      <span class="k">Tip <span id="outPct"></span></span>
+      <span class="v" id="outTip">$0.00</span>
+    </div>
+    <div class="row total">
+      <span class="k">Total</span>
+      <span class="v" id="outTotal">$0.00</span>
+    </div>
+
+    <div class="divider-label" id="perLabel">Per person</div>
+    <div class="row each">
+      <span class="k">Tip each</span>
+      <span class="v" id="outSplitTip">$0.00</span>
+    </div>
+    <div class="row each">
+      <span class="k">Total each</span>
+      <span class="v" id="outSplitTotal">$0.00</span>
+    </div>
+    <p class="note" id="note"></p>
+  </section>
+
+  <button type="button" class="reset" id="reset">Reset</button>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var billEl = $('bill'), tipEl = $('tip'), splitEl = $('split');
+  var symEls = document.querySelectorAll('[data-sym]');
+  var currencyEl = $('currency');
+  var STORE = 'tip-app-v1';
+  var sym = '$';
+
+  function num(value) {
+    var n = parseFloat(String(value).replace(/[^0-9.]/g, ''));
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function people() {
+    var n = parseInt(splitEl.value, 10);
+    return isFinite(n) && n > 0 ? n : 1;
+  }
+
+  // Paint the filled part of a range track up to its thumb (WebKit needs this;
+  // Firefox uses ::-moz-range-progress instead).
+  function paint(el) {
+    var min = parseFloat(el.min), max = parseFloat(el.max);
+    var pct = (parseFloat(el.value) - min) / (max - min) * 100;
+    el.style.setProperty('--fill', pct + '%');
+  }
+
+  function money(n) {
+    return sym + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function render() {
+    var bill = num(billEl.value);
+    var pct = num(tipEl.value);
+    var split = people();
+
+    $('tipValue').textContent = pct + '%';
+    $('splitValue').textContent = split + (split === 1 ? ' person' : ' people');
+    paint(tipEl);
+    paint(splitEl);
+
+    var tip = bill * pct / 100;
+    var total = bill + tip;
+    var tipEach = tip / split;
+    var totalEach = total / split;
+
+    $('outBill').textContent = money(bill);
+    $('outTip').textContent = money(tip);
+    $('outTotal').textContent = money(total);
+    $('outPct').textContent = '(' + pct + '%)';
+    $('outSplitTip').textContent = money(tipEach);
+    $('outSplitTotal').textContent = money(totalEach);
+    $('perLabel').textContent = split === 1 ? 'Per person (1 person)'
+                                            : 'Per person (' + split + ' people)';
+
+    // Per-person amounts are rounded to the cent, so they may not add back up
+    // to the total exactly. Say so instead of quietly losing the difference.
+    var diff = Math.round(total * 100) - Math.round(totalEach * 100) * split;
+    $('note').textContent = diff === 0 ? ''
+      : split + ' × ' + money(Math.round(totalEach * 100) / 100) + ' = ' +
+        money(Math.round(totalEach * 100) * split / 100) + ', ' +
+        money(Math.abs(diff) / 100) + (diff > 0 ? ' short of' : ' over') + ' the total.';
+
+    save();
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({
+        bill: billEl.value, tip: tipEl.value, split: splitEl.value, cur: currencyEl.value
+      }));
+    } catch (e) { /* private mode / storage disabled — calculator still works */ }
+  }
+
+  function load() {
+    var raw;
+    try { raw = localStorage.getItem(STORE); } catch (e) { return; }
+    if (!raw) return;
+    try {
+      var s = JSON.parse(raw);
+      billEl.value = s.bill || '';
+      if (s.tip) tipEl.value = s.tip;
+      if (s.split) splitEl.value = s.split;
+      if (s.cur) currencyEl.value = s.cur;
+    } catch (e) { /* ignore malformed state */ }
+  }
+
+  function setCurrency() {
+    sym = currencyEl.value || '$';
+    symEls.forEach(function (el) { el.textContent = sym; });
+    render();
+  }
+
+  $('reset').addEventListener('click', function () {
+    billEl.value = '';
+    tipEl.value = '15';
+    splitEl.value = '1';
+    render();
+    billEl.focus();
+  });
+
+  [billEl, tipEl, splitEl].forEach(function (el) { el.addEventListener('input', render); });
+  billEl.addEventListener('focus', function () { billEl.select(); });
+  currencyEl.addEventListener('change', setCurrency);
+
+  // Dismiss the keyboard when Return is pressed on any field.
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.blur) {
+      document.activeElement.blur();
+    }
+  });
+
+  load();
+  setCurrency();
+
+  // Offline caching only applies when served over http(s); harmless otherwise.
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>
