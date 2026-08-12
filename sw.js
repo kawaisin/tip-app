@@ -1,6 +1,6 @@
 // Offline cache. The HTML is network-first so an updated app is picked up as
 // soon as there is a connection; everything else is cache-first for speed.
-var CACHE = 'tip-app-v2';
+var CACHE = 'tip-app-v3';
 var ASSETS = [
   './',
   './index.html',

@@ -249,13 +249,11 @@
   <header>
     <h1>Tip Calculator</h1>
     <select id="currency" aria-label="Currency">
-      <option value="$">$ USD</option>
-      <option value="€">€ EUR</option>
-      <option value="£">£ GBP</option>
-      <option value="¥">¥ JPY</option>
-      <option value="C$">C$ CAD</option>
-      <option value="A$">A$ AUD</option>
-      <option value="₹">₹ INR</option>
+      <option value="USD">$ USD</option>
+      <option value="EUR">€ EUR</option>
+      <option value="GBP">£ GBP</option>
+      <option value="HKD">HK$ HKD</option>
+      <option value="BRL">R$ BRL</option>
     </select>
   </header>
 
@@ -329,7 +327,17 @@
   var symEls = document.querySelectorAll('[data-sym]');
   var currencyEl = $('currency');
   var STORE = 'tip-app-v1';
-  var sym = '$';
+
+  // Symbol plus the thousands/decimal separators each currency is normally
+  // written with, so R$ 1.234,56 doesn't come out looking American.
+  var CURRENCIES = {
+    USD: { sym: '$',   group: ',', dec: '.' },
+    EUR: { sym: '€',   group: '.', dec: ',' },
+    GBP: { sym: '£',   group: ',', dec: '.' },
+    HKD: { sym: 'HK$', group: ',', dec: '.' },
+    BRL: { sym: 'R$',  group: '.', dec: ',', pad: ' ' }   // written "R$ 1.234,56"
+  };
+  var cur = CURRENCIES.USD;
 
   function num(value) {
     var n = parseFloat(String(value).replace(/[^0-9.]/g, ''));
@@ -350,7 +358,9 @@
   }
 
   function money(n) {
-    return sym + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    var parts = n.toFixed(2).split('.');
+    var whole = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, cur.group);
+    return cur.sym + (cur.pad || '') + whole + cur.dec + parts[1];
   }
 
   function render() {
@@ -405,13 +415,14 @@
       billEl.value = s.bill || '';
       if (s.tip) tipEl.value = s.tip;
       if (s.split) splitEl.value = s.split;
-      if (s.cur) currencyEl.value = s.cur;
+      if (s.cur && CURRENCIES[s.cur]) currencyEl.value = s.cur;
     } catch (e) { /* ignore malformed state */ }
   }
 
   function setCurrency() {
-    sym = currencyEl.value || '$';
-    symEls.forEach(function (el) { el.textContent = sym; });
+    // Falls back to USD if an older saved value no longer matches the list.
+    cur = CURRENCIES[currencyEl.value] || CURRENCIES.USD;
+    symEls.forEach(function (el) { el.textContent = cur.sym; });
     render();
   }
 
