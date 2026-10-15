@@ -2,12 +2,12 @@
 """Resize every image in a folder to a specific size.
 
 Usage:
-    python3 resize_images.py INPUT_DIR WIDTH HEIGHT [options]
+    python3 projects/resize_images.py INPUT_DIR WIDTH HEIGHT [options]
 
 Examples:
-    python3 resize_images.py ./photos 1080 1080
-    python3 resize_images.py ./photos 1920 1080 --mode fill -o ./out
-    python3 resize_images.py ./photos 512 512 --mode pad --background white --format png
+    python3 projects/resize_images.py ./photos 1080 1080
+    python3 projects/resize_images.py ./photos 1920 1080 --mode fill -o ./out
+    python3 projects/resize_images.py ./photos 512 512 --mode pad --background white --format png
 
 Modes:
     fit      Shrink/grow to fit inside WIDTHxHEIGHT, keeping aspect ratio (default).
